@@ -25,38 +25,35 @@ class VkUser:
         req = requests.get(photos_get_url, params={**self.params , **photos_get_params}).json()
         if 'response' not in req:
             print(req.get('response', 'Нет ключа "response"'))
+            return
         elif 'items' not in req['response']:
             print(req['response'].get('items', 'Нет ключа "items"')) 
-        else:
-            req1 = req['response']['items']
-            may_list = []
-            may_buffer_check = []
-            files=[]
-            file_path = os.path.join(os.path.join(os.getcwd()))
-            files = [f for f in sorted(os.listdir(file_path))]
-            if str(owner_id) in files:
-                shutil.rmtree(str(owner_id))
-                os.mkdir(str(owner_id))
-            else:
-                os.mkdir(str(owner_id))
-            for date in req1:
-                likes = date['likes']['count']
-                size = date['sizes'][-1]['type']
-                file_url = date['sizes'][-1]['url']
-                file_name = f'{likes}.jpg'
-                if file_name not in may_buffer_check:
-                    may_buffer_check.append(file_name)  
-                else:
-                    file_name = f'{size}_{file_name}'
-                    may_buffer_check.append(file_name)
-                may_list.append(
-                        {'file_name': file_name, 'size': size}
-                )
-                api = requests.get(file_url)
-                with open(f"{owner_id}/%s" % file_name, "wb") as file:
-                    file.write(api.content)
-            pprint(may_list)
-            return may_list
+            return 
+        req1 = req['response']['items']
+        may_list = []
+        may_buffer_check = []
+        files=[]
+        file_path = os.path.join(os.path.join(os.getcwd()))
+        files = [f for f in sorted(os.listdir(file_path))]
+        if str(owner_id) in files:
+            shutil.rmtree(str(owner_id))
+        os.mkdir(str(owner_id))
+        for date in req1:
+            likes = date['likes']['count']
+            size = date['sizes'][-1]['type']
+            file_url = date['sizes'][-1]['url']
+            file_name = f'{likes}.jpg'
+            if file_name in may_buffer_check:
+                file_name = f'{size}_{file_name}'
+            may_buffer_check.append(file_name)
+            may_list.append(
+                    {'file_name': file_name, 'size': size}
+            )
+            api = requests.get(file_url)
+            with open(f"{owner_id}/%s" % file_name, "wb") as file:
+                file.write(api.content)
+        pprint(may_list)
+        return may_list
 
 class YaUploader:
     def __init__(self, token):
