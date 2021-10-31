@@ -4,10 +4,15 @@ import requests
 import pyprind
 import shutil
 
-token_vk = ""
+with open('token_vk.txt', 'r') as file_token_vk:
+    token_vk = file_token_vk.read().strip()
+
+with open('token_yan.txt', 'r') as file_token_yan:
+    token_yan = file_token_yan.read().strip()
+
 
 class VkUser:
-    url = 'https://api.vk.com/method/'
+    url = 'https://api.vk.com/method/photos.get'
     def __init__(self, token_vk, version):
         self.params = {
             'access_token': token_vk,
@@ -15,19 +20,18 @@ class VkUser:
         }
         
     def get_photos(self, owner_id=1, album_id='profile', extended=1, count=5):
-        photos_get_url = self.url + 'photos.get'
         photos_get_params = {
             "owner_id": owner_id,
             "album_id": album_id,
             "extended": extended,
             "count": count
         }
-        req = requests.get(photos_get_url, params={**self.params , **photos_get_params}).json()
+        req = requests.get(self.url, params={**self.params , **photos_get_params}).json()
         if 'response' not in req:
-            print(req.get('response', 'Нет ключа "response"'))
+            print('В словаре "req" нет ключа "response"')
             return
         elif 'items' not in req['response']:
-            print(req['response'].get('items', 'Нет ключа "items"')) 
+            print('В словаре "req" нет ключа "items"')
             return 
         req1 = req['response']['items']
         may_list = []
@@ -35,9 +39,10 @@ class VkUser:
         files=[]
         file_path = os.path.join(os.path.join(os.getcwd()))
         files = [f for f in sorted(os.listdir(file_path))]
-        if str(owner_id) in files:
-            shutil.rmtree(str(owner_id))
-        os.mkdir(str(owner_id))
+        owner_id_str = str(owner_id)
+        if owner_id_str in files:
+            shutil.rmtree(owner_id_str)
+        os.mkdir(owner_id_str)
         for date in req1:
             likes = date['likes']['count']
             size = date['sizes'][-1]['type']
@@ -99,8 +104,9 @@ def Upload_photo(owner_id, token_yan):
     
 if __name__ == '__main__':
 
-    token_yan = ""
-    Upload_photo(owner_id=552934290, token_yan=token_yan)
+    owner_id = input('Введите идентификатор владельца акаунта VK: ')
+
+    Upload_photo(owner_id=owner_id, token_yan=token_yan)
 
     
     
